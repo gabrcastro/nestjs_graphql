@@ -1,62 +1,59 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserSettingInput } from './dto/create-user-setting.input';
 import { UpdateUserSettingInput } from './dto/update-user-setting.input';
-import { userSettingsMock } from 'src/__mocks__/user-settings.mock';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserSettings } from './entities/user-settings.entity';
+import { Repository } from 'typeorm';
+import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/entities/user';
 
 @Injectable()
 export class UserSettingsService {
-  create(input: CreateUserSettingInput) {
-    const newUserSettings = {
-      userId: input.userId,
-      receiveNotifications: input.receiveNotifications,
-      receiveEmails: input.receiveEmails,
-    };
+  constructor(
+    @InjectRepository(UserSettings)
+    private _repository: Repository<UserSettings>,
+    @InjectRepository(User)
+    private _userRepository: Repository<User>,
+  ) {}
 
-    userSettingsMock.push(newUserSettings);
+  async create(input: CreateUserSettingInput): Promise<UserSettings> {
+    const user = await this._userRepository.findOne({
+      where: { id: input.userId },
+    });
+    if (!user) throw new NotFoundException('User not found');
 
-    return newUserSettings;
+    const userSettings = this._repository.create(input);
+    const userSettingsAdded = this._repository.save(userSettings);
+    user.settings = userSettings;
+    await this._userRepository.save(user);
+    return userSettingsAdded;
   }
 
-  getOne(id: number) {
-    const userSettings = userSettingsMock.find(
-      (userSettings) => userSettings.userId === id,
-    );
+  async getOne(id: number): Promise<UserSettings> {
+    const userSettings = await this._repository.findOne({
+      where: { userId: id },
+    });
     if (!userSettings) {
       throw new NotFoundException(`User settings not found`);
     }
-
     return userSettings;
   }
 
-  update(input: UpdateUserSettingInput) {
-    const index = userSettingsMock.findIndex(
-      (userSettings) => userSettings.userId === input.userId,
-    );
-
-    if (index === -1) {
+  async update(input: UpdateUserSettingInput): Promise<UserSettings> {
+    const userSettings = await this._repository.findOne({
+      where: { userId: input.id },
+    });
+    if (!userSettings) {
       throw new NotFoundException(`User settings not found`);
     }
-
-    const updatedUserSettings = { ...input };
-    userSettingsMock[index] = {
-      ...userSettingsMock[index],
-      ...updatedUserSettings,
-    };
-
-    return userSettingsMock[index];
+    const userSettingsUpdated = await this._repository.update(input.id, {
+      ...input,
+    });
+    return userSettingsUpdated.raw;
   }
 
-  remove(id: number) {
-    const index = userSettingsMock.findIndex(
-      (userSettings) => userSettings.userId === id,
-    );
-
-    if (index === -1) {
-      throw new NotFoundException(`User settings with id ${id} not found`);
-    }
-
-    userSettingsMock.splice(index, 1);
-
-    return true;
+  async remove(id: number): Promise<string> {
+    await this._repository.delete(id);
+    return 'User settings with id ${id} was removed';
   }
 }

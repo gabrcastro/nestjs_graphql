@@ -1,19 +1,7 @@
-import {
-  Args,
-  Int,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-  Mutation,
-} from '@nestjs/graphql';
+import { Args, Int, Query, Resolver, Mutation } from '@nestjs/graphql';
 import { User } from './entities/user';
-import { usersMock } from 'src/__mocks__/user.mock';
-import { userSettingsMock } from 'src/__mocks__/user-settings.mock';
 import { CreateUserInput } from './inputs/create-user.input';
 import { UpdateUserInput } from './inputs/update-user.input';
-import { NotFoundException } from '@nestjs/common';
-import { UserSettings } from 'src/user-settings/entities/user-settings.entity';
 import { UserService } from './user.service';
 
 @Resolver(() => User)
@@ -30,14 +18,17 @@ export class UserResolver {
     return this.userService.getOne(id);
   }
 
-  @Mutation(() => User)
+  @Mutation(() => User, { name: 'createUser' })
   async createUser(@Args('data') input: CreateUserInput) {
     return this.userService.create(input);
   }
 
   @Mutation(() => User)
-  async updateUser(@Args('data') input: UpdateUserInput) {
-    return this.userService.update(input);
+  async updateUser(
+    @Args('id') id: number,
+    @Args('data') input: UpdateUserInput,
+  ) {
+    return this.userService.update(id, input);
   }
 
   @Mutation(() => Boolean)

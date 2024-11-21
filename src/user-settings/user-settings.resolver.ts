@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UserSettingsService } from './user-settings.service';
 import { CreateUserSettingInput } from './dto/create-user-setting.input';
 import { UpdateUserSettingInput } from './dto/update-user-setting.input';
@@ -29,8 +29,8 @@ export class UserSettingsResolver {
     return this.userSettingsService.update(input);
   }
 
-  @Mutation(() => Boolean)
-  removeUserSettings(@Args('id') id: number) {
+  @Mutation(() => String)
+  removeUserSettings(@Args('id', { type: () => Int }) id: number) {
     return this.userSettingsService.remove(id);
   }
 }
