@@ -1,0 +1,52 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type UserSettings {
+  userId: Int!
+  receiveNotifications: Boolean!
+  receiveEmails: Boolean!
+}
+
+type User {
+  id: Int!
+  name: String!
+  email: String
+  settings: UserSettings
+}
+
+type Query {
+  getUsers: [User!]!
+  getUserById(id: Int!): User
+  getOneUserSettings(userId: Float!): UserSettings!
+}
+
+type Mutation {
+  createUser(data: CreateUserInput!): User!
+  updateUser(data: UpdateUserInput!): User!
+  deleteUser(id: Int!): Boolean!
+  createUserSettings(data: CreateUserSettingInput!): UserSettings!
+  updateUserSettings(data: UpdateUserSettingInput!): UserSettings!
+  removeUserSettings(id: Float!): Boolean!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+}
+
+input UpdateUserInput {
+  name: String
+  email: String
+  id: Int!
+}
+
+input CreateUserSettingInput {
+  userId: Int!
+  receiveNotifications: Boolean! = false
+  receiveEmails: Boolean! = false
+}
+
+input UpdateUserSettingInput {
+  id: Int!
+}
