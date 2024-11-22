@@ -10,12 +10,12 @@ export class UserResolver {
 
   @Query(() => [User])
   async getUsers() {
-    return this.userService.getAll();
+    return this.userService.findAll();
   }
 
   @Query(() => User, { nullable: true })
   async getUserById(@Args('id', { type: () => Int }) id: number) {
-    return this.userService.getOne(id);
+    return this.userService.findUserById(id);
   }
 
   @Mutation(() => User, { name: 'createUser' })

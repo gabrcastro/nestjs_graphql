@@ -1,7 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserInput } from './inputs/create-user.input';
 import { UpdateUserInput } from './inputs/update-user.input';
-import { usersMock } from 'src/__mocks__/user.mock';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user';
@@ -20,17 +23,20 @@ export class UserService {
     });
     const userAdded = await this._repository.save(user);
 
+    if (!userAdded)
+      throw new InternalServerErrorException('Error to create a user');
+
     return userAdded;
   }
 
-  async getAll(): Promise<User[]> {
+  async findAll(): Promise<User[]> {
     const users: User[] = await this._repository.find({
       relations: ['settings'],
     });
     return users;
   }
 
-  async getOne(id: number): Promise<User> {
+  async findUserById(id: number): Promise<User> {
     const user: User = await this._repository.findOne({
       where: {
         id: id,
@@ -46,12 +52,21 @@ export class UserService {
   }
 
   async update(id: number, input: UpdateUserInput): Promise<User> {
-    const result = await this._repository.update(id, { ...input });
-    return result.raw;
+    const user = await this.findUserById(id);
+    if (!user) throw new NotFoundException(`Error to update a user`);
+
+    await this._repository.update(user, { ...input });
+    const userAdded = await this._repository.create({ ...user, ...input });
+
+    return userAdded;
   }
 
-  async delete(id: number): Promise<string> {
-    await this._repository.delete(id);
-    return 'User deleted';
+  async delete(id: number): Promise<boolean> {
+    const user = await this.findUserById(id);
+    if (!user) throw new NotFoundException(`Error to update a user`);
+
+    const deleted = await this._repository.delete(id);
+    if (deleted) return true;
+    return false;
   }
 }

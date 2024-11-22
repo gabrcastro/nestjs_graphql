@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserSettings } from './entities/user-settings.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
-import { User } from 'src/user/entities/user';
+import { User } from '../user/entities/user';
 
 @Injectable()
 export class UserSettingsService {

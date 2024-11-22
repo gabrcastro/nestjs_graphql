@@ -3,7 +3,6 @@ import { CreateUserInput } from './create-user.input';
 
 @InputType()
 export class UpdateUserInput extends PartialType(CreateUserInput) {
-  x;
   @Field({ nullable: true })
   email?: string;
 }
